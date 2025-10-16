@@ -1,0 +1,4 @@
+@layer common, page;
+
+@import './_config/_media.css' layer(common);
+@import './_config/_reset.css' layer(common);
