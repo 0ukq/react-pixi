@@ -1,6 +1,6 @@
 import { useExtend, useTick } from '@pixi/react';
 import { Graphics, BlurFilter } from 'pixi.js';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface FireFlyProps {
   width: number;
@@ -47,6 +47,47 @@ const FireFly: React.FC<FireFlyProps> = ({ width, height }) => {
 
   const [particles, setParticles] = useState<Particle[]>(() => createParticles());
   const timeRef = useRef(0);
+  const prevSizeRef = useRef({ width, height });
+
+  // ウィンドウリサイズ時にパーティクルの位置を調整
+  useEffect(() => {
+    const prevWidth = prevSizeRef.current.width;
+    const prevHeight = prevSizeRef.current.height;
+
+    if (prevWidth !== width || prevHeight !== height) {
+      setParticles(prevParticles =>
+        prevParticles.map(particle => {
+          let newX = particle.x;
+          let newY = particle.y;
+
+          // 画面が小さくなった場合、画面外のパーティクルを画面内に収める
+          if (particle.x > width) {
+            newX = width * Math.random();
+          }
+          if (particle.y > height) {
+            newY = height * Math.random();
+          }
+
+          // 画面が大きくなった場合、一部のパーティクルを新しいエリアに拡散
+          if (width > prevWidth || height > prevHeight) {
+            if (Math.random() < 0.3) {
+              // 30%の確率で新しいエリアに配置
+              newX = Math.random() * width;
+              newY = Math.random() * height;
+            }
+          }
+
+          return {
+            ...particle,
+            x: newX,
+            y: newY,
+          };
+        })
+      );
+
+      prevSizeRef.current = { width, height };
+    }
+  }, [width, height]);
 
   // 時間経過とともにアルファ値と位置を更新
   useTick(ticker => {
