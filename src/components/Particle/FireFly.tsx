@@ -17,19 +17,21 @@ interface Particle {
   speed: number;
   radius: number;
   alpha: number;
-  phase: number; // 位相（点滅のタイミング）
+  phase: number; // 点滅
 }
 
 const FireFly: React.FC<FireFlyProps> = ({ width, height }) => {
   useExtend({ Graphics });
 
-  const particleCount = 30;
+  const particleCount = 250;
 
   // パーティクルの生成
   const createParticles = useCallback(() => {
     return [...Array(particleCount)].map((_, i) => {
       const angle = Math.random() * Math.PI * 2; // ランダムな方向
-      const speed = Math.random() * 0.2; // 移動速度
+      const speed = Math.random() * 0.05; // 移動速度
+      console.log(speed);
+
       return {
         id: i,
         color: 0xffffff,
@@ -38,7 +40,7 @@ const FireFly: React.FC<FireFlyProps> = ({ width, height }) => {
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         speed,
-        radius: Math.random() * 2 + 2, // 2〜4の間のランダムな値
+        radius: 1,
         alpha: 1,
         phase: Math.random() * Math.PI * 2, // ランダムな初期位相
       };
@@ -60,7 +62,7 @@ const FireFly: React.FC<FireFlyProps> = ({ width, height }) => {
           let newX = particle.x;
           let newY = particle.y;
 
-          // 画面が小さくなった場合、画面外のパーティクルを画面内に収める
+          // 画面縮小時、画面外のパーティクルを画面内に収める
           if (particle.x > width) {
             newX = width * Math.random();
           }
@@ -68,7 +70,7 @@ const FireFly: React.FC<FireFlyProps> = ({ width, height }) => {
             newY = height * Math.random();
           }
 
-          // 画面が大きくなった場合、一部のパーティクルを新しいエリアに拡散
+          // 画面拡大時、一部のパーティクルを新しいエリアに拡散
           if (width > prevWidth || height > prevHeight) {
             if (Math.random() < 0.3) {
               // 30%の確率で新しいエリアに配置
@@ -105,7 +107,7 @@ const FireFly: React.FC<FireFlyProps> = ({ width, height }) => {
         if (newY < 0) newY = height;
         if (newY > height) newY = 0;
 
-        // たまにランダムに方向を微調整（蛍っぽいふわふわした動き）
+        // ランダムに動くように調整
         let newVx = particle.vx;
         let newVy = particle.vy;
         if (Math.random() < 0.02) {
@@ -139,7 +141,7 @@ const FireFly: React.FC<FireFlyProps> = ({ width, height }) => {
         graphics.circle(particle.x, particle.y, particle.radius);
         graphics.fill({ color: particle.color, alpha: particle.alpha });
       });
-      graphics.filters = [new BlurFilter({ strength: 3 })];
+      graphics.filters = [new BlurFilter({ strength: 1 })];
     },
     [particles]
   );
